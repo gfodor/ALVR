@@ -13,7 +13,7 @@ use crate::{
 };
 use alvr_common::{
     glam::{Quat, Vec3},
-    *,
+    Fov, *,
 };
 use alvr_packets::{ButtonEntry, ButtonValue, StreamConfig};
 use alvr_session::{BodyTrackingBDConfig, BodyTrackingSourcesConfig, FaceTrackingSourcesConfig};
@@ -22,6 +22,14 @@ use std::{collections::HashMap, time::Duration};
 use xr::SpaceLocationFlags;
 
 const IPD_CHANGE_EPS: f32 = 0.001;
+const FOV_CHANGE_EPS: f32 = 0.001; // ~0.06 degrees in radians
+
+fn fov_changed_significantly(old_fov: &Fov, new_fov: &Fov) -> bool {
+    (old_fov.left - new_fov.left).abs() > FOV_CHANGE_EPS
+        || (old_fov.right - new_fov.right).abs() > FOV_CHANGE_EPS
+        || (old_fov.up - new_fov.up).abs() > FOV_CHANGE_EPS
+        || (old_fov.down - new_fov.down).abs() > FOV_CHANGE_EPS
+}
 
 // Most OpenXR runtime, including Meta's one, do not follow perfectly the specification regarding
 // controller pose. The Z axis should point down through the center of the controller grip, the X
@@ -720,15 +728,25 @@ pub fn get_head_data(
         .distance(last_view_params[1].pose.position);
     let current_ipd_m = crate::from_xr_vec3(views[1].pose.position)
         .distance(crate::from_xr_vec3(views[0].pose.position));
-    let view_params = if f32::abs(current_ipd_m - last_ipd_m) > IPD_CHANGE_EPS {
+    
+    let current_fov = [
+        crate::from_xr_fov(views[0].fov),
+        crate::from_xr_fov(views[1].fov),
+    ];
+    
+    let ipd_changed = f32::abs(current_ipd_m - last_ipd_m) > IPD_CHANGE_EPS;
+    let fov_changed = fov_changed_significantly(&last_view_params[0].fov, &current_fov[0])
+        || fov_changed_significantly(&last_view_params[1].fov, &current_fov[1]);
+    
+    let view_params = if ipd_changed || fov_changed {
         Some([
             ViewParams {
                 pose: motion.pose.inverse() * crate::from_xr_pose(views[0].pose),
-                fov: crate::from_xr_fov(views[0].fov),
+                fov: current_fov[0],
             },
             ViewParams {
                 pose: motion.pose.inverse() * crate::from_xr_pose(views[1].pose),
-                fov: crate::from_xr_fov(views[1].fov),
+                fov: current_fov[1],
             },
         ])
     } else {
