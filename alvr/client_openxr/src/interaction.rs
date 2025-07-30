@@ -22,7 +22,7 @@ use std::{collections::HashMap, time::Duration};
 use xr::SpaceLocationFlags;
 
 const IPD_CHANGE_EPS: f32 = 0.001;
-const FOV_CHANGE_EPS: f32 = 0.001; // ~0.06 degrees in radians
+const FOV_CHANGE_EPS: f32 = 0.05; // ~5.7 degrees in radians
 
 fn fov_changed_significantly(old_fov: &Fov, new_fov: &Fov) -> bool {
     (old_fov.left - new_fov.left).abs() > FOV_CHANGE_EPS
