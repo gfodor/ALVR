@@ -10,7 +10,7 @@ use std::fmt::{Display, Formatter};
 
 pub const PACKAGE_NAME_STORE: &str = "alvr.client";
 pub const PACKAGE_NAME_GITHUB_DEV: &str = "alvr.client.dev";
-pub const PACKAGE_NAME_GITHUB_STABLE: &str = "alvr.client.stable";
+pub const PACKAGE_NAME_GITHUB_STABLE: &str = "io.portalvr.alvr";
 
 // Platform of the device. It is used to match the VR runtime and enable features conditionally.
 #[derive(PartialEq, Eq, Clone, Copy)]

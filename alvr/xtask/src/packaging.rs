@@ -112,7 +112,7 @@ pub fn package_client_openxr(flavor: ReleaseFlavor, skip_admin_priv: bool) {
 
     if !matches!(flavor, ReleaseFlavor::GitHub) {
         replace_client_openxr_manifest(
-            r#"package = "alvr.client.stable""#,
+            r#"package = "io.portalvr.alvr""#,
             r#"package = "alvr.client""#,
         );
     }
